@@ -1,0 +1,116 @@
+
+
+%=======================   Default Templete   ==================
+\documentclass[a4paper]{article}
+\usepackage{graphicx}
+
+% file with some default definations
+\input{structure.tex}
+\usepackage{listings}
+\lstset{language=Python, basicstyle=\normalsize\sffamily\linespread{0.8}, numbers=left, numberstyle=\small, stepnumber=1, numbersep=5pt}
+\usepackage{fancyhdr}
+\usepackage{pdfpages} 
+\setlength{\parindent}{0pt}
+\fancypagestyle{note_1}{\fancyfoot[R]{\textit{* These kind of auction are sealed bid auction.}}}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textbf{\NAME\ (\ANDREWID)}}
+\chead{\textbf{UGP Report}}
+\rhead{\COURSE}
+
+
+%==================Header details======================
+\newcommand\NAME{Raghukul Raman}
+\newcommand\ANDREWID{160538}
+\newcommand\HWNUM{4}
+\newcommand\COURSE{CS395}
+%======================================================
+
+% available formatted sections:
+% - COMMAND LINE ENVIRONMENT: \begin{commandline} \end{commandline}
+% - FILE CONTENTS ENVIRONMENT: \begin{file}[optional filename, defaults to "File"]
+% - NUMBERED QUESTIONS ENVIRONMENT: \begin{question}[optional title]
+% - WARNING TEXT ENVIRONMENT(can also be used for note): \begin{warn}[optional title, defaults to "Warning:"]
+% - INFORMATION ENVIRONMENT(can be used to mention given details): \begin{info}[optional title, defaults to "Info:"]
+
+%===============================================================
+\begin{document}
+\includepdf[page={1}]{first_page.pdf}
+\section*{Abstract}
+In the modern world where application response is a critical metric,
+in memory databases are gaining wide popularity. In-memory databases primarily relies
+on main memory for data storage. These databases are becoming a crucial part of many
+applications due to the availability of less expensive RAM, and the demand for high response time.
+Accessing data in memory eliminates seek time when querying the data,
+which provides faster and more predictable performance than disk.
+Some of the cases where in-memory databases perform exceptionally well are Queues,
+sticky sessions, caching, real-time analysis of data, etc. \\
+
+Generally, these in-memory databases are implemented as key-value stores;
+some traditional ones are Redis, Memcached, Hazelcast, etc. Large scale caching
+can be done by scaling the instances of these databases. One way is running a fixed number of instances,
+while the other is to scale up/down based on the load that our sever gets.
+This project aims at analyzing and providing an auto-scaling solution to this problem. \\
+
+First, we try to collect statistics for different queries on different node
+configurations and try to find possible bottlenecks in the cluster based system.
+We analyze by scaling redis horizontally as well as vertically and try to explain the results.
+For analyzing clusters we use an open source tool called Twemproxy
+(a fast, light-weight proxy for Memcached and redis). We try to limit resources and
+measure performance for these configurations. We also try to build a system which can
+be used to interact with the cluster and efficiently shard the requests among
+different instances. Second part of the project is to give a scaling algorithm based on machine learning
+and some statistical predictions.
+
+
+
+
+\pagebreak
+\section*{Introduction}
+
+
+\pagebreak
+\section*{Design Details}
+
+
+
+\pagebreak
+\begin{thebibliography}{9}
+
+\bibitem{treasury} 
+Leonardo Bartolini and Carlo Cottarelli.
+\textit{Designing Effective Auctions for Treasury Securities}. 
+Current issues in \texttt{ECONOMICS} and \texttt{FINANCE}, \textit{Vol. 3 No. 9, July 97}
+
+\bibitem{rbi} 
+Ravi Shankar and Sanjoy Bose. 
+\textit{Auctions of Government Securities in India –An Analysis.}
+Reserve Bank of India Occasional Papers,\textit{ Vol. 29 No. 3, Winter 2008}
+
+\bibitem{recent_adapt}
+Kenneth D. Garbade and Jeffrey F. Ingber.
+\textit{The Treasury Auction Process: Objectives, Structure, and Recent Adaptations.}
+Current issues in \texttt{ECONOMICS} and \texttt{FINANCE}, \textit{Vol. 11 No. 2, Feb 06}
+
+\bibitem{}
+Paul R. Milgrom.
+\textit{Auctions and Bidding: A Primer.}
+Journal of Economic Perspective, \textit{Vol. 3 No. 3, Summer 89}
+
+\bibitem{}
+Paul R. Milgrom and Robert J. Weber.
+\textit{A theory of auctions and competitive bidding - II.}
+1981
+
+\bibitem{}
+Kevin Leyton-Brown, Paul R. Milgrom and Ilya Segal.
+\textit{Economics and computer science of a radio spectrum reallocation.}
+PNAS, \textit{Vol. 114 No. 28, 2017}
+
+
+\bibitem{knuthwebsite} 
+Paul R. Milgrom.
+\textit{Business Activities.}
+\\\texttt{http://www.milgrom.net/business-activities}
+\end{thebibliography}
+\end{document}
