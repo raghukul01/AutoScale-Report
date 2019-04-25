@@ -7,15 +7,15 @@
 % file with some default definations
 \input{structure.tex}
 \usepackage{listings}
-\lstset{language=Python, basicstyle=\normalsize\sffamily\linespread{0.8}, numbers=left, numberstyle=\small, stepnumber=1, numbersep=5pt}
+\lstset{language=Bash, basicstyle=\normalsize\linespread{0.8}, stepnumber=1, numbersep=5pt}
 \usepackage{fancyhdr}
 \usepackage{pdfpages} 
 \setlength{\parindent}{0pt}
 \fancypagestyle{note_1}{\fancyfoot[R]{\textit{* These kind of auction are sealed bid auction.}}}
 \pagestyle{fancy}
 \fancyhf{}
-\lhead{\textbf{\NAME\ (\ANDREWID)}}
-\chead{\textbf{UGP Report}}
+\lhead{\textit{Auto Scaling of Key Value stores}}
+\chead{\textit{UGP Report}}
 \rhead{\COURSE}
 \usepackage{cite}
 
@@ -23,7 +23,7 @@
 \newcommand\NAME{Raghukul Raman}
 \newcommand\ANDREWID{160538}
 \newcommand\HWNUM{4}
-\newcommand\COURSE{CS395}
+\newcommand\COURSE{CS396}
 %======================================================
 
 % available formatted sections:
@@ -120,8 +120,7 @@ are simpler and execute fewer CPU instructions.
 
 \subsection*{Scalability}
 \textbf{Scalability} is the property of a system to handle a growing amount of work
-by adding resources to the system [\textit{Bondi, Andre - Characteristics of
-scalability and their impact on performance, 2000}]. In layman terms, when
+by adding resources to the system \cite{scaling}. In layman terms, when
 you realise your system is getting slow and is unable to handle
 the current number of requests, you need to scale the system. Scaling 
 can be done in two ways:
@@ -141,9 +140,111 @@ can be done in two ways:
 \end{itemize}
 
 \subsection*{Redis}
-Redis is an open source (BSD licensed), in-memory data structure store,
-used as a database, cache and message broker [\textit{redis.io}] \cite{latexcompanion}
+Redis project started by Salvatore Sanfilippo(\textit{antirez}) is
+an open source, in-memory data structure store,
+used as a database, cache and message broker \cite{redis}.
+Apart from basic key-value structure it also supports other data structures like:
+strings, hashes, lists, sets, sorted sets with range queries, bitmaps,
+hyperloglogs, geospatial indexes with radius queries and streams. Redis has built in
+support for replication, on-disk persistance and automated partitioning with Redis cluster.
+Redis also supports trivial-to-setup master-slave asynchronous
+replication, with very fast non-blocking first synchronization, auto-reconnection
+with partial resynchronization on net split \cite{redis}.
+There is also support to run these operations in atomic fashion with the help
+of transactions.
+\\
 
+One intruging property of redis which makes it different from other classical key
+value stores is: it gives support to mention expiration time for keys. This features
+comes handy when we are using redis for cache purpose, olders keys would be deleted automatically.
+
+\pagebreak
+
+\subsection*{Redis Cluster}
+Redis cluster can be defined as a collection of redis nodes which are able to communicate
+among themselves, and are able to respond to requests collectively.
+Redis Cluster provides a way to run a Redis installation where
+data is automatically sharded across multiple Redis nodes.
+Redis Cluster also provides some degree of availability during partitions
+that is in practical terms the ability to continue the operations when
+some nodes fail or are not able to communicate \cite{redis}.
+\\
+
+Every redis cluster node require two TCP ports, the lower one is used to server clients,
+while the higher one(lower port+10000) is used for Cluster bus (node-to-node communication).
+Redis cluster use CRC16 hashing system, using which every key is hashed to
+becomes part of one of $16384$ hash slots (these are like buckets 
+which contain keys, after hashing). So each cluster node is
+responsible for a subset of hash slots, that is keys which hash to a particluar
+hash slot, would be found in the node serving that hash slot.
+The user can force multiple keys to be part of the same hash slot
+by using a concept called hash tags.
+
+
+\subsubsection*{Creating a Redis Cluster}
+To create a redis cluster we need to run the required number of instances of redis
+(on different ports), and then inform all these nodes about cluster meet. A typical
+redis config file for cluster node is:
+\begin{file}[redis.conf]
+port $6379$ \\
+cluster-enabled yes \\
+cluster-config-file nodes.conf \\
+cluster-node-timeout $5000$ \\
+appendonly yes \\
+\end{file}
+
+After running all the required number of instances(with different ports, if
+running on same machine), we need to run:
+\begin{lstlisting}
+\$ redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
+127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 
+\end{lstlisting}
+Here the IPs mentioned are the host and ports of the redis instances. After 
+running this command we are asked about the hash slot distribution, to be configured
+among the nodes. And that's it, all the node share infomation about cluster,
+and other nodes via messaging protocol. So after this process, each node will have a
+hash slot to node (IP:PORT) mapping, and all other cluster informations like node timeout etc.
+
+\subsubsection*{Redirection and Resharding}
+We assume that a client know nothing about the distribution of hash slots in the cluster,
+so it is equally probable to send a request to any of the node.
+On recieving a request, the redis node will find the hash slot to which this key
+belongs, if the hash slot is served by current node, it would simply return the value
+to the client. Is case hash slot is not served, it would check its internal hash slot
+to node map, and would respond to the client with an MOVED error, along this error
+message it would also send the IP of the node serving hash slot to which this key maps.
+This is pretty handy since client doesn't have to hit and try every node,
+it would get the correct address after one try. Still there is an overhead, since we
+need to send a request twice (in worst case). We'll come to this issue in more detail
+in the partitioning section.
+\\
+
+Redis Cluster supports the ability to add and remove nodes while the
+cluster is running. Adding or removing a node is abstracted into
+the same operation: moving a hash slot from one node to another. This
+means that the same basic mechanism can be used in order to rebalance the
+cluster, add or remove nodes, and so forth. Moving slots in running cluster 
+is not an issue, since if the hash key is present in current node, it would simply 
+return the value, in case that particular key is moved to another node, it would
+respond with an moved error. Hence resharding can we done in redis cluster without
+any down time.
+
+\subsubsection*{Partioning}
+Partioning refers to the way how we shard data among
+different nodes of redis cluster. Note that redis cluster provide a 
+sharding scheme based on CRC16, but we can make some custom modification in the sharding
+scheme at different levels, these are:
+\begin{enumerate}
+    \item \textbf{Client side partitioning}: In this scheme, redis clients select the
+        node to which read/write request need to be made.
+    \item \textbf{Proxy assisted partitioning}: This scheme suggests that client sends
+        request to a proxy, which analyzes the request and forwards it to the correct node.
+        On recieving response it then returns it to the client. eg: Twemproxy
+    \item \textbf{Query Routing}: We can send request to any node, and the node will
+        forward our request to the correct node. Redis cluster implements a similar kind of
+        scheme, where instead of forwarding, it returns the address to which we should forward.
+\end{enumerate}
+Among these partioning schems proxy assisted partitioning are most popular.
 
 \pagebreak
 \section*{Design Details}
@@ -157,20 +258,10 @@ used as a database, cache and message broker [\textit{redis.io}] \cite{latexcomp
 Redis documentation,
 \texttt{redis.io}
         
-\bibitem{latexcompanion} 
-Michel Goossens, Frank Mittelbach, and Alexander Samarin. 
-\textit{The \LaTeX\ Companion}. 
-Addison-Wesley, Reading, Massachusetts, 1993.
-%  
-% \bibitem{einstein} 
-% Albert Einstein. 
-% \textit{Zur Elektrodynamik bewegter K{\"o}rper}. (German) 
-% [\textit{On the electrodynamics of moving bodies}]. 
-% Annalen der Physik, 322(10):891–921, 1905.
-%  
-% \bibitem{knuthwebsite} 
-% Knuth: Computers and Typesetting,
-% \\\texttt{http://www-cs-faculty.stanford.edu/\~{}uno/abcde.html}
+\bibitem{scaling}
+Bondi, Andre.
+\textit{Characteristics of scalability and their imapct on performace.}
+WOSP, 2000.
 \end{thebibliography}
 
 \end{document}
