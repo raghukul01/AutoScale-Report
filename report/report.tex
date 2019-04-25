@@ -246,8 +246,41 @@ scheme at different levels, these are:
 \end{enumerate}
 Among these partioning schems proxy assisted partitioning are most popular.
 
+\subsection*{Twemproxy}
+Twemproxy is a proxy assisted partitioning implementation, developed for redis and memcached.
+Note that this proxy is not a single point of failure, since we can run multiple
+instance of the proxy, and the client would try to connect with them sequentially
+on unsuccessful connection it would try to connect to the next intance.
+It maintains persistent server connections, enables pipelining of
+requests and responses, shard data automatically across multiple servers, keeps copy
+of node configurations \cite{twem}.
+\\
+
+Twemproxy also has support for data collection i.e stats exposed on the
+stats monitoring port (can be configured).
+To configure twemproxy for a cluster of nodes we need to provide with a YAML config
+file like:
+\begin{file}[conf]
+\begin{lstlisting}
+  listen: 127.0.0.1:22122
+  hash: fnv1a_64
+  hash_tag: "{}"
+  distribution: ketama
+  auto_eject_hosts: false
+  timeout: 400
+  redis: true
+  servers:
+   - 127.0.0.1:6380:1 server1
+   - 127.0.0.1:6381:1 server2
+   - 127.0.0.1:6382:1 server3
+   - 127.0.0.1:6383:1 server4
+\end{lstlisting}
+\end{file}
+Stats are by default exposed on port $22222$.
+
+
 \pagebreak
-\section*{Design Details}
+\section*{Experiments}
 
 
 
@@ -262,6 +295,11 @@ Redis documentation,
 Bondi, Andre.
 \textit{Characteristics of scalability and their imapct on performace.}
 WOSP, 2000.
+
+\bibitem{twem}
+Twemproxy, developed by twitter,
+\texttt{github.com/twitter/twemproxy}
+
 \end{thebibliography}
 
 \end{document}
