@@ -1,7 +1,7 @@
 
 
 %=======================   Default Templete   ==================
-\documentclass[a4paper]{article}
+\documentclass[11pt]{article}
 \usepackage{graphicx}
 
 % file with some default definations
@@ -17,7 +17,7 @@
 \lhead{\textbf{\NAME\ (\ANDREWID)}}
 \chead{\textbf{UGP Report}}
 \rhead{\COURSE}
-
+\usepackage{cite}
 
 %==================Header details======================
 \newcommand\NAME{Raghukul Raman}
@@ -37,36 +37,112 @@
 \begin{document}
 \includepdf[page={1}]{first_page.pdf}
 \section*{Abstract}
-In the modern world where application response is a critical metric,
-in memory databases are gaining wide popularity. In-memory databases primarily relies
-on main memory for data storage. These databases are becoming a crucial part of many
-applications due to the availability of less expensive RAM, and the demand for high response time.
-Accessing data in memory eliminates seek time when querying the data,
-which provides faster and more predictable performance than disk.
-Some of the cases where in-memory databases perform exceptionally well are Queues,
-sticky sessions, caching, real-time analysis of data, etc. \\
+In the modern day computing where application response is a 
+critical metric, in memory databases are gaining popularity. In-memory 
+databases primarily use main memory for data storage. These databases 
+are becoming a crucial part of many applications due to the availability 
+of less expensive RAM, and the demand for high response time.  Some of 
+the cases where in-memory databases perform exceptionally well are 
+Queues, sticky sessions, caching, real-time data analysis, etc.
+\\
 
-Generally, these in-memory databases are implemented as key-value stores;
-some traditional ones are Redis, Memcached, Hazelcast, etc. Large scale caching
-can be done by scaling the instances of these databases. One way is running a fixed number of instances,
-while the other is to scale up/down based on the load that our sever gets.
-This project aims at analyzing and providing an auto-scaling solution to this problem. \\
+Generally, these in-memory databases are implemented as key-value 
+stores; some well know key-value stores are Redis, Memcached, Hazelcast, 
+etc. Large scale caching can be done by scaling the instances of these 
+databases. Dynamic scaling of instances can provide cost-effective 
+key-value storage services.This project aims at analyzing and providing 
+an auto-scaling solution to this problem.
+\\
 
-First, we try to collect statistics for different queries on different node
-configurations and try to find possible bottlenecks in the cluster based system.
-We analyze by scaling redis horizontally as well as vertically and try to explain the results.
-For analyzing clusters we use an open source tool called Twemproxy
-(a fast, light-weight proxy for Memcached and redis). We try to limit resources and
-measure performance for these configurations. We also try to build a system which can
-be used to interact with the cluster and efficiently shard the requests among
-different instances. Second part of the project is to give a scaling algorithm based on machine learning
-and some statistical predictions.
+We try to collect statistics for different queries on different node 
+configurations and try to find possible bottlenecks in the cluster based 
+system. We analyze by scaling redis horizontally as well as vertically. 
+For analyzing clusters we use an open source tool called Twemproxy (a 
+fast, light-weight proxy for Memcached and redis). We limit resources 
+and measure performance for these configurations. We also try to build a 
+system which can be used to interact with the cluster and efficiently 
+shard the requests among different instances.
+
+
+
+
+% In the modern world where application response is a critical metric,
+% in memory databases are gaining wide popularity. In-memory databases primarily relies
+% on main memory for data storage. These databases are becoming a crucial part of many
+% applications due to the availability of less expensive RAM, and the demand for high response time.
+% Accessing data in memory eliminates seek time when querying the data,
+% which provides faster and more predictable performance than disk.
+% Some of the cases where in-memory databases perform exceptionally well are Queues,
+% sticky sessions, caching, real-time analysis of data, etc. \\
+% 
+% Generally, these in-memory databases are implemented as key-value stores;
+% some traditional ones are Redis, Memcached, Hazelcast, etc. Large scale caching
+% can be done by scaling the instances of these databases. One way is running a fixed number of instances,
+% while the other is to scale up/down based on the load that our sever gets.
+% This project aims at analyzing and providing an auto-scaling solution to this problem. \\
+% 
+% First, we try to collect statistics for different queries on different node
+% configurations and try to find possible bottlenecks in the cluster based system.
+% We analyze by scaling redis horizontally as well as vertically and try to explain the results.
+% For analyzing clusters we use an open source tool called Twemproxy
+% (a fast, light-weight proxy for Memcached and redis). We try to limit resources and
+% measure performance for these configurations. We also try to build a system which can
+% be used to interact with the cluster and efficiently shard the requests among
+% different instances. Second part of the project is to give a scaling algorithm based on machine learning
+% and some statistical predictions.
 
 
 
 
 \pagebreak
 \section*{Introduction}
+\subsection*{Key Value Stores}
+Key value stores are a special kind of database management system, where the 
+data is organized in just $2$ columns - a key, and a value. Here the key is mostly
+text, while the value can be anything and is simply an object. The actual data
+essentially becomes "value", which is indexed with "key", so whole data 
+becomes schema-less and is just organized in just $2$ columns. One important property
+is that since the data is indexed by just the keys, there is a lot of scope of
+distributing keys over different instances, making the system highly scalable.
+\\
+
+These kind of databases fall into the category of nosql data stores, satisfying the 
+BASE properties (Basically Available, Soft state, Eventually consistent).
+In the contezt of the CAP theorem (Consistency, Availability, Partition tolerance), these
+databases fall into the category of CP. Since these databases are generally implemented
+in cluster mode, we cannot gurantee availability on data.
+\\
+
+These databases are generally in-memory which reside in main memory. In-memory
+databases are faster than disk-optimized databases because disk access is 
+slower than memory access, the internal optimization algorithms 
+are simpler and execute fewer CPU instructions.
+
+\subsection*{Scalability}
+\textbf{Scalability} is the property of a system to handle a growing amount of work
+by adding resources to the system [\textit{Bondi, Andre - Characteristics of
+scalability and their impact on performance, 2000}]. In layman terms, when
+you realise your system is getting slow and is unable to handle
+the current number of requests, you need to scale the system. Scaling 
+can be done in two ways:
+
+\begin{itemize}
+    \item \textbf{Vertical Scaling:} Increasing the resources in the server
+            which we are currently using, i.e increase the amount of CPU, GPU,
+            CPU, etc. Vertical scaling generally costly, also it may
+            require the system to go down for a moment when the scaling takes
+            place (need for downtime).
+    \item \textbf{Horizontal Scaling:} Increasing the number of servers (instances).
+            This would lead to decrease in the overall load on the system, if requests
+            are sharded properly. This kind of scaling solution is typically popular 
+            in tech industries, as it makes the system fault tolerant (single point of
+            failure reduced). Important advantage of this method is that it can provide
+            administrators with the ability to increase capacity on the fly.
+\end{itemize}
+
+\subsection*{Redis}
+Redis is an open source (BSD licensed), in-memory data structure store,
+used as a database, cache and message broker [\textit{redis.io}] \cite{latexcompanion}
 
 
 \pagebreak
@@ -77,40 +153,24 @@ and some statistical predictions.
 \pagebreak
 \begin{thebibliography}{9}
 
-\bibitem{treasury} 
-Leonardo Bartolini and Carlo Cottarelli.
-\textit{Designing Effective Auctions for Treasury Securities}. 
-Current issues in \texttt{ECONOMICS} and \texttt{FINANCE}, \textit{Vol. 3 No. 9, July 97}
-
-\bibitem{rbi} 
-Ravi Shankar and Sanjoy Bose. 
-\textit{Auctions of Government Securities in India –An Analysis.}
-Reserve Bank of India Occasional Papers,\textit{ Vol. 29 No. 3, Winter 2008}
-
-\bibitem{recent_adapt}
-Kenneth D. Garbade and Jeffrey F. Ingber.
-\textit{The Treasury Auction Process: Objectives, Structure, and Recent Adaptations.}
-Current issues in \texttt{ECONOMICS} and \texttt{FINANCE}, \textit{Vol. 11 No. 2, Feb 06}
-
-\bibitem{}
-Paul R. Milgrom.
-\textit{Auctions and Bidding: A Primer.}
-Journal of Economic Perspective, \textit{Vol. 3 No. 3, Summer 89}
-
-\bibitem{}
-Paul R. Milgrom and Robert J. Weber.
-\textit{A theory of auctions and competitive bidding - II.}
-1981
-
-\bibitem{}
-Kevin Leyton-Brown, Paul R. Milgrom and Ilya Segal.
-\textit{Economics and computer science of a radio spectrum reallocation.}
-PNAS, \textit{Vol. 114 No. 28, 2017}
-
-
-\bibitem{knuthwebsite} 
-Paul R. Milgrom.
-\textit{Business Activities.}
-\\\texttt{http://www.milgrom.net/business-activities}
+\bibitem{redis}
+Redis documentation,
+\texttt{redis.io}
+        
+\bibitem{latexcompanion} 
+Michel Goossens, Frank Mittelbach, and Alexander Samarin. 
+\textit{The \LaTeX\ Companion}. 
+Addison-Wesley, Reading, Massachusetts, 1993.
+%  
+% \bibitem{einstein} 
+% Albert Einstein. 
+% \textit{Zur Elektrodynamik bewegter K{\"o}rper}. (German) 
+% [\textit{On the electrodynamics of moving bodies}]. 
+% Annalen der Physik, 322(10):891–921, 1905.
+%  
+% \bibitem{knuthwebsite} 
+% Knuth: Computers and Typesetting,
+% \\\texttt{http://www-cs-faculty.stanford.edu/\~{}uno/abcde.html}
 \end{thebibliography}
+
 \end{document}
