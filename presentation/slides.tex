@@ -19,6 +19,7 @@
 \usepackage{xcolor}
 \usepackage{listings}
 \usepackage{algorithm2e}
+\usepackage{graphicx}
 \lstset
 {
     language=[LaTeX]TeX,
@@ -165,14 +166,60 @@
 \begin{frame}{Partioning}
 \begin{itemize}
     \item The way how we shard data among different nodes of redis cluster.
+    \item \textbf{Client side partitioning:} redis clients select the node to which read/write request need to be made.
+    \item \textbf{Proxy assisted partitioning:} client sends request to a proxy,
+        which analyzes the request and forwards it to the correct node.
+    \item \textbf{Query Routing:} can send request to any node, and the node
+        will forward our request to the desired correct node.
+    \item Examples: Jedis, twemproxy, Redis Cluster. 
 \end{itemize}
 \end{frame}
 
-\section{Experiments}
-\begin{frame}{intro}
-hello2.5
+\begin{frame}{Twemproxy}
+\begin{itemize}
+    \item Proxy assisted partitioning implementation.
+    \item It maintains \textbf{persistent} server connections.
+    \item Shard data automatically across multiple servers, keeps copy of node configurations.
+    \item Not a single point of failure.
+    \item Stats monitoring port.
+\end{itemize}
 \end{frame}
 
+% Introduction section ends here.
+\section{Experiments}
+
+\begin{frame}{Experiments}
+\begin{itemize}
+    \item Collecting stats - by limiting resources.
+    \item Generate random strings of length 64 - mimic SHA2.
+    \item Tests based on get/set commands.
+    \item Resource limitation enforced using docker.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+    \includegraphics[width=\textwidth]{fig1.eps}
+\end{frame}
+
+
+\begin{frame}
+    \includegraphics[width=\textwidth]{fig2.eps}
+\end{frame}
+
+
+\begin{frame}
+    \includegraphics[width=\textwidth]{fig3.eps}
+\end{frame}
+
+\begin{frame}
+\begin{center}
+    \includegraphics[width=0.8\textwidth]{fig4.eps}
+\end{center}
+    \begin{itemize}
+        \item fractional CPUs?
+    \end{itemize}
+\end{frame}
 
 \section{Observations}
 \begin{frame}{intro}
