@@ -108,7 +108,7 @@ distributing keys over different instances, making the system highly scalable.
 
 These kind of databases fall into the category of nosql data stores, satisfying the 
 BASE properties (Basically Available, Soft state, Eventually consistent).
-In the contezt of the CAP theorem (Consistency, Availability, Partition tolerance), these
+In the context of the CAP theorem (Consistency, Availability, Partition tolerance), these
 databases fall into the category of CP. Since these databases are generally implemented
 in cluster mode, we cannot gurantee availability on data.
 \\
@@ -127,7 +127,7 @@ can be done in two ways:
 
 \begin{itemize}
     \item \textbf{Vertical Scaling:} Increasing the resources in the server
-            which we are currently using, i.e increase the amount of CPU, GPU,
+            which we are currently using, i.e increase the amount of memory, GPU,
             CPU, etc. Vertical scaling generally costly, also it may
             require the system to go down for a moment when the scaling takes
             place (need for downtime).
@@ -328,7 +328,8 @@ Unlike main memory CPUs kind of affect the response time non linearly.
 Above figure suggests that response time quadratically depends on the 
 cpu period/quota.
 
-
+\pagebreak
+\subsection*{Redis Cluster experiments}
 
 
 

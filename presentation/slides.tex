@@ -1,0 +1,192 @@
+\documentclass{beamer}
+%
+% Choose how your presentation looks.
+%
+% For more themes, color themes and font themes, see:
+% http://deic.uab.es/~iblanes/beamer_gallery/index_by_theme.html
+%
+\mode<presentation>
+{
+  \usetheme{Madrid}      % or try Darmstadt, Madrid, Warsaw, ...
+  \usecolortheme{beaver} % or try albatross, beaver, crane, ...
+  \usefonttheme{serif}  % or try serif, structurebold, ...
+  \setbeamertemplate{navigation symbols}{}
+  \setbeamertemplate{caption}[numbered]
+} 
+
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{algorithm2e}
+\lstset
+{
+    language=[LaTeX]TeX,
+    breaklines=true,
+    basicstyle=\tt\scriptsize,
+    %commentstyle=\color{green}
+    keywordstyle=\color{blue},
+    %stringstyle=\color{black}
+    identifierstyle=\color{magenta},
+}
+
+\title[CS396]{Auto Scaling of Key Value stores}
+\author{Raghukul Raman}
+\institute{IIT Kanpur}
+\date{\today}
+
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% Uncomment these lines for an automatically generated outline.
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+\section{Abstract}
+
+\begin{frame}{Aim}
+    \begin{itemize}
+        \item Collect statistics for different queries on different scaling configurations
+            and try to find possible bottlenecks in the system.
+        \item Providing an auto-scaling solution for key
+                value stores. 
+    \end{itemize}
+\end{frame}
+
+
+
+\section{Introduction}
+\begin{frame}{Key Value Stores}
+    \begin{itemize}
+        \item Data is organized in just 2 columns - a \textbf{key}, and a \textbf{value}.
+        \item Actual data is value - can be object, keys are used to index these data objects.
+        \item Satisfy \textbf{BASE} property.
+            \begin{itemize}
+                \item Basically Available
+                \item Soft state
+                \item Eventually consistent
+            \end{itemize}
+        \item \textbf{CAP} theorem
+            \begin{itemize}
+                \item Consistency
+                \item Availability
+                \item Partition tolerance
+            \end{itemize}
+        \item Fall into CP category.
+        \item Mostly In-memory - extremy fast compared to traditional DBs.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Scalability}
+    \begin{itemize}
+        \item \textit{def:} Property of a system to handle a growing amount of work by adding resources
+            to the system[Bondi, Andre - 2000].
+        \item Two variants:
+            \begin{itemize}
+                \item \textbf{Vertical Scaling:} Increasing the resources in the
+                        server which we are currently using, i.e increase the amount of memory, CPU etc.
+                \item \textbf{Horizontal Scaling:} Increasing the number of servers (instances).
+            \end{itemize}
+        \item Benefits of horizontal scaling:
+            \begin{itemize}
+                \item make system fault tolerant.
+                \item down time.
+            \end{itemize}
+        \item Several load balancing schemes are used in horizontal scaling.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Redis}
+    \begin{itemize}
+        \item developed by Salvatore Sanfilippo(\textit{antirez}).
+        \item Open source, in-memory data structure store, used as a database, cache and message broker.
+        \item Supports other data structures like: strings, hashes, lists, sets, sorted sets with range queries, bitmaps, hyperloglogs.
+        \item Built in support for replication, on-disk persistance and automated partitioning with Redis cluster.
+        \item Master-slave asynchronous replication.
+        \item Transaction, expiration time (BigTable).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Redis Cluster}
+    \begin{itemize}
+        \item Collection of redis nodes
+            \begin{itemize}
+                \item Able to communicate among themselves.
+                \item Able to respond to requests collectively.
+            \end{itemize}
+        \item Data is automatically sharded across multiple Redis nodes.
+        \item Every redis node require 2 ports:
+            \begin{itemize}
+                \item Lower one is used to server clients.
+                \item Other used for Cluster Bus (node-to-node communication).
+            \end{itemize}
+        \item CRC16 hashing system - $16384$ hash slots.
+        \item Each cluster node is responsible for a subset of hash slots.
+        \item Hash tags.
+        \item After cluster meet, every node contain node - hash slot mapping.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Resharding}
+\begin{itemize}
+    \item Redis Cluster supports the ability to add and remove nodes while the cluster is running.
+    \item Same basic mechanism can be used in order to rebalance the cluster, add or remove nodes.
+    \item Moving hash slots through Cluster Bus.
+    \item No down time - with the help of MOVED Error.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Redirection}
+\begin{itemize}
+    \item Client knows nothing - can send request to any node.
+    \item On recieving a request:
+        \begin{itemize}
+            \item return the value if serves that hash slot.
+            \item MOVED error, if not served.
+        \end{itemize}
+    \item MOVED error response also contain IP:PORT of node serving that hash slot.
+    \item Still is an overhead.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Partioning}
+\begin{itemize}
+    \item The way how we shard data among different nodes of redis cluster.
+\end{itemize}
+\end{frame}
+
+\section{Experiments}
+\begin{frame}{intro}
+hello2.5
+\end{frame}
+
+
+\section{Observations}
+\begin{frame}{intro}
+hello3
+\end{frame}
+
+
+\section{Further works}
+\begin{frame}{intro}
+hello4
+\end{frame}
+
+
+
+
+
+\end{document}
