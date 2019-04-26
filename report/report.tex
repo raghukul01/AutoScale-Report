@@ -303,10 +303,30 @@ After this step, we just need to inform all the nodes to form cluster (can be do
 
 \subsection*{Single redis instance}
 \includegraphics[width=\textwidth]{fig1.eps}
-\includegraphics[width=\textwidth]{fig2.eps}
-\includegraphics[width=\textwidth]{fig3.eps}
-\includegraphics[width=\textwidth]{fig4.eps}
+This graph is on logarithmic scale, on a linear scale we observe a linear
+relation between the time and number of queries.
 
+\includegraphics[width=\textwidth]{fig2.eps}
+In the above experiment, we limit the main memory supply of the
+redis instance to $10Mb$. Comparing this graph with the first graph,
+we can see that time taken increases drastically for $n=10^5$ queries
+
+\includegraphics[width=\textwidth]{fig3.eps}
+In this experiment we try to capture the effect of main memory on the performace
+of redis. We can see that increasing memory, lineary decrease the response time,
+which is quite intutive since the pages swaped out would decrease lineary 
+if we increase memory supply.
+
+\includegraphics[width=\textwidth]{fig4.eps}
+We cannot have fractional CPUs, above values just signify cpu period,
+and the cpu quota. For example cpus="$1.5$", means that the node is
+guaranteed at most one and a half of the CPUs, which is the equivalent
+of setting cpu-period="$100000$" and cpu-quota="$150000$"
+\\
+
+Unlike main memory CPUs kind of affect the response time non linearly.
+Above figure suggests that response time quadratically depends on the 
+cpu period/quota.
 
 
 

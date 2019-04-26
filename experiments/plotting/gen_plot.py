@@ -27,22 +27,22 @@ X = 0.28, y = 10144.72
 X = 0.32, y = 9315.19
 
 '''
-X = [0.16, 0.20, 0.24, 0.28, 0.32, 0.36, 0.40]
-Y = [49739.76, 23595.67, 14041.67, 10144.72, 9315.19, 9010.58, 8982.42]
+# X = [0.16, 0.20, 0.24, 0.28, 0.32, 0.36, 0.40]
+# Y = [49739.76, 23595.67, 14041.67, 10144.72, 9315.19, 9010.58, 8982.42]
 
 plt.plot(X, Y)
 
 # plt.xscale('log')
 
-plt.ylabel('time (ms)')
-plt.xlabel('percentage of CPU allocated to redis instance')
-plt.suptitle('10^5 queries on redis instance, with varying CPU', fontsize=16)
+plt.ylabel('response time (ms)')
+plt.xlabel('number of queries (set) - logarithmic scale')
+plt.suptitle('Single redis instance, with no memory/cpu restriction', fontsize=16)
 
-plt.xticks([0.12, 0.14, 0.16, 0.2, 0.24, 0.28, 0.32, 0.36, 0.40, 0.44, 0.48])
+# plt.xticks([0.12, 0.14, 0.16, 0.2, 0.24, 0.28, 0.32, 0.36, 0.40, 0.44, 0.48])
 
 for i in range(len(X)):
     coordinates = '('+str(X[i]) +', '+str(Y[i])+')'
-    plt.text(X[i], Y[i], coordinates, fontsize=6)
+    plt.text(X[i], Y[i], coordinates, fontsize=9)
     plt.scatter(X[i], Y[i], c="r",marker='o')
 
 
