@@ -196,7 +196,7 @@ appendonly yes \\
 After running all the required number of instances(with different ports, if
 running on same machine), we need to run:
 \begin{lstlisting}
-\$ redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
+$ redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 
 \end{lstlisting}
 Here the IPs mentioned are the host and ports of the redis instances. After 
@@ -281,6 +281,34 @@ Stats are by default exposed on port $22222$.
 
 \pagebreak
 \section*{Experiments}
+For collecting stats about performance of redis/redis cluster by limiting 
+resources, we generate random strings of length $64$ as key (to mimic
+sha2, hashed keys - 256 bit sized), and the values are ranged from $1$ to $128$ character long.
+Most of these experiments are performed by running redis images on docker,
+since docker provides elegant way to limit resources of a container.
+Since get/set are the most basic commands used, most of our tests
+are based on these commands (other commands are indeed build on these commands).
+
+\subsection*{Running redis cluster on docker}
+To run a redis cluster in docker containers we need to run all the redis instances in the same network. For this we first need to create a bridge in docker:
+\begin{lstlisting}
+$ docker network create redis_cluster
+\end{lstlisting}
+after creating the network, we need to run each of the instances in this network. One important thing to note is that we need to give the default port ($6379$) in all of them, this is because docker network, itself allocated unique IP:PORT to each of the container in the network.
+\begin{lstlisting}
+$ docker run -d -v --net redis_cluster redis \
+    redis-server /path/to/config/$file
+\end{lstlisting}
+After this step, we just need to inform all the nodes to form cluster (can be done with redis-cli, as given in the introduction section for creating a redis cluster).
+
+\subsection*{Single redis instance}
+\includegraphics[width=\textwidth]{fig1.eps}
+\includegraphics[width=\textwidth]{fig2.eps}
+\includegraphics[width=\textwidth]{fig3.eps}
+\includegraphics[width=\textwidth]{fig4.eps}
+
+
+
 
 
 
